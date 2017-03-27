@@ -10,29 +10,17 @@
 		</div>
 		<div class="foods-wrapper" @scroll="changemenu($event)">
 		 	<ul v-for="(item,index) in  goods" >
-		 		<span class="category">{{item.name}}</span>
-		 		<li v-for="(goodsitem,goodsindex) in foods[index]" @click="opendetail(goodsitem,index,goodsindex)">
-		 			<div class="image"><img :src="goodsitem.image" alt=""></div>
-		 			<div class="details">
-		 				<div class="title">{{goodsitem.name}}</div>
-		 				<div class="descriptions">{{goodsitem.description}}</div>
-		 				<div class="sales">月售{{goodsitem.sellCount}}份 <span class="evaluation">好评率{{goodsitem.rating}}%</span></div>
-		 				<div class="price">￥{{goodsitem.price}}<s class="oldprice" style="display:inline-block;margin-left:8px " v-show="goodsitem.oldPrice!=''">{{goodsitem.oldPrice}}</s></div>	
-		 				<adddecrease class="button"  
-		 				:price="forods[index][goodsindex].price"	
-		 				:goodsitemname = "foods[index][goodsindex].name" 
-		 				:itemname="itemname[index]"></adddecrease>
-		 			</div>
-		 		</li>
-		 	</ul>
+		 		<span class="category">{{item.name}}</span>				
+				<item v-for="(goodsitem,goodsindex) in foods[index]" :foods="goodsitem"></item>	
+			</ul>
 		 </div>	
-		<gooddetail class="gooddetail" :checkfood="clickitem" :show="show" :count="nowNumber"></gooddetail>
 	</div>
 </template>
 <script>
 import adddecrease from '../../src/components/adddecrease.vue'
-import gooddetail from '../../src/components/gooddetail.vue'
+
 import vm from '../../src/newvue.js'
+import item from '../../src/components/item.vue'
 
 export default{
 	data(){
@@ -41,11 +29,6 @@ export default{
 			nowIndex : 0,
 			height:[],
 			foods:[],
-			itemname:[],
-			count:[],
-			clickitem:-1,
-			show:false,
-			nowNumber:0,
 
 		}
 	},
@@ -55,31 +38,12 @@ export default{
 	        _this.goods=response.body.goods;
 	        for(var k = 0 ; k < _this.goods.length ; k++ ){
   				_this.foods[k] = new Array;
-  				_this.count[k] = new Array;
-  				_this.itemname[k] = _this.goods[k].name;
   				for(var j = 0 ; j < _this.goods[k].foods.length ; j++ ){
   					_this.foods[k][j] = _this.goods[k].foods[j];
-  					_this.count[k][j] = 0;
 
   				}
         	}
 	      },function(response){});
-  	},
-  	mounted(){
-  		vm.$on('choosed',function(choosed){
-  				if(choosed.goodsitemname === "-1")
-  					return ;
-  				for( var i = 0 ; i < this.foods.length ; i++ )
-  				{
-  					for( var k = 0 ; k < this.foods[i].length ; k++ )
-  					{
-  						if(choosed.goodsitemname === this.foods[i][k].name)
-  						{
-  							vm.$set(this.count[i],k,choosed.count);
-  						}
-  					}
-  				}
-  			}.bind(this));
   	},
   	updated(){
   			var ul = document.getElementsByClassName('foods-wrapper')[0].getElementsByTagName('ul');
@@ -143,19 +107,10 @@ export default{
   					this.nowIndex = 0;
   			}
   		},
-  		opendetail(goodsitem,index,goodsindex){
-  			this.clickitem = goodsitem;
-  			for( var i = 0 ; i < this.clickitem.ratings.length ; i++ )
-	  		{
-	  			this.clickitem.ratings[i].flag = false;
-	  		}
-  			this.nowNumber = this.count[index][goodsindex];
-  			this.show = !this.show;
-  		}
   	},
   	components:{
   		adddecrease:adddecrease,
-  		gooddetail:gooddetail,
+  		item:item,
   	}
 
 }
@@ -168,13 +123,9 @@ ul,li{
 }
 .goods{
 	display: flex;
-	/* position: absolute;
-	top: 183px;
-	bottom: 46px; */
 	width: 100%;
 	height:460px;
 	overflow: scroll;
-	/* min-height: 100%; */
 }
 .goods .menu-wrapper{
 	width: 80px;
@@ -224,66 +175,11 @@ ul,li{
 	color: rgb(147,153,159);
 	line-height: 26px;
 }
-.goods .foods-wrapper ul li{
-	margin: 18px;
-	height:65px;
-
+.goods .foods-wrapper ul{
 	border-bottom: 1px solid rgba(7,17,27,0.1);
 	padding-bottom: 18px;
 }
-.goods .foods-wrapper ul li .image{
-	display: inline-block;
-	width: 55px;
-	height: 55px;
-	vertical-align: top;
-}
-.goods .foods-wrapper ul li .image img{
-	display: inline-block;
-	width: 55px;
-	height: 55px;
-}
-.goods .foods-wrapper ul li .details{
-	position: relative;
-	display: inline-block;
-	margin-left: 10px;
-	margin-top: 2px;
-	width: 189px;
-}
-.goods .foods-wrapper ul li .details .title{
-	font-size: 14px;
-	color: rgb(7,17,27);
-	line-height: 14px;
-}
-.goods .foods-wrapper ul li .details .descriptions{
-	margin-top: 2px;
-	font-size: 10px;
-	color: rgb(147,153,159);
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
 
-}
-.goods .foods-wrapper ul li .details .sales{
-	margin-top: 2px;
-	font-size: 10px;
-	color: rgb(147,153,159);
-
-}
-.goods .foods-wrapper ul li .details .price{
-	font-size: 14px;
-	color: rgb(240,20,20);
-	font-weight: normal;
-}
-.goods .foods-wrapper ul li .details .price .oldprice{
-	font-size: 10px;
-	color: rgb(147,153,159);
-	font-weight: normal;
-}
-.goods .foods-wrapper ul li .button{
-	position: absolute;
-	top:46px;
-	right:0px;
-}
 .gooddetail{
 	position: absolute;
 	width: 100%;

@@ -3,9 +3,10 @@
 		<footer>
 			<div class="left">
 				<div class="car" @click="showdetail">
-					<div class="carBackground">
+					<div class="carBackground" :style="[carbgstyle[count>0?1:0]]">
 						<div class="icon-shopping_cart"></div>
-					</div>			
+					</div>
+					<div class="number" v-show="count!=0">{{count}}</div>			
 				</div>
 				<div class="price">
 					<div class="payPrice" :class="{'white':(totalprice!=0)}">￥{{animatedNumber}}</div>
@@ -23,12 +24,13 @@ export default{
 	props:["deliveryPrice","minPrice"],
 	data(){
 		return {
-			goods:[],
-			count:[],
 			flag:'false',
 			totalprice:0,
 			confirm:"",
 			animatedNumber:0,
+			count:0,
+			carbgstyle:[{'background-color': '#222B34',  'color': 'rgba(255,255,255,0.4)'},
+						{'background-color':'rgb(0,160,220)','color':'white'}],
 		}
 	},
 	watch:{
@@ -38,6 +40,18 @@ export default{
 		},
 
 		totalprice:function(newValue, oldValue){
+				if(newValue == 0)
+			     {
+			     	this.confirm = "￥"+this.minPrice+"起送";
+			     }
+			     else if(newValue<this.minPrice)
+			     {
+			     	this.confirm = "还差"+(this.minPrice - newValue)+"元起送";
+			     }
+			     else{
+			     	this.confirm = "去结算";
+			     }
+
 				var vm = this;
 			    function animate (time) {
 			        requestAnimationFrame(animate)
@@ -50,31 +64,27 @@ export default{
 			        vm.animatedNumber = this.tweeningNumber.toFixed(0)
 			      })
 			    .start()
-			     animate()
+			     animate()			     
 		}
 	},
-
 	mounted(){
-		vm.$on('totalprice',function(totalprice){
-			this.totalprice = totalprice +this.totalprice;
-			if(this.totalprice==0)
+		vm.$on("countChange",function(obj){
+			if(obj.msg === "add")
 			{
-				this.confirm = "￥"+this.minPrice+"起送";
+				this.totalprice += obj.foods.price;
+				this.count++;
 			}
-			else if(this.totalprice>=this.minPrice)
+			else if( obj.msg === "decrease")
 			{
-				this.confirm = "去结算";
-			}
-			else
-			{
-				this.confirm = "还差"+(this.minPrice-this.totalprice)+"起送";
+				if(this.totalprice!=0)
+				{
+					this.totalprice -= obj.foods.price;
+					this.count--;
+				}
 			}
 		}.bind(this));
-		vm.$on('choosed',function(choosed){
-			if(choosed.goodsitemname == -1)
-			{
-				this.totalprice = 0;
-			}
+		vm.$on("clearout",function(){
+			this.totalprice = 0;
 		}.bind(this));
 	},
 	methods:{
@@ -112,22 +122,39 @@ footer .left .car{
 	margin:0px 0px 0px 18px;
 	background-color: #141d27;
 	/* background-color: #222B34; */
+
+}
+footer .left .car .number{
+	position: absolute;
+	text-align: center;
+	left: 43px;
+	top: 0px;
+	font-size: 9px;
+	font-weight: 350;
+	color: white;
+	line-height: 16px;
+	width: 24px;
+	height: 12px;
+	border-radius: 6px;
+	background-color:rgb(240,20,20);
+	box-shadow: 0px 4px 8px 0px rgba(0,0,0,0.4);
 }
 footer .left .car .carBackground{
-	background-color: #222B34;
+	
 	width: 100%;
   	height: 100%;
   	border-radius: 50%;
   	box-sizing: border-box;
-    padding-left: 10px;
+   /*  padding-left: 10px; */
     padding-top: 9px;
+    text-align: center;
 }
 
 .icon-shopping_cart:before {
   content: "\e907";
   font-family: 'icomoon';
-  color: rgba(255,255,255,0.4);
   font-size: 24px;
+  text-align: center;
 }
 footer .left .price{
 	display: inline-block;

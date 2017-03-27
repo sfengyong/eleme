@@ -1,19 +1,13 @@
 <template>
-	<div class="detail" v-show="flag">
-		<div class="content">
+	<div class="detail" v-show="flag" @click = "flag=!flag">
+		<div class="content" @click.stop="">
 			<div class="title">
 				<span class="car">购物车</span>
 				<span class="clearout" @click = "clearout">清空</span>
 			</div>
 			<ul>
-				<li v-for="(item,index) of choosed">
-					<span class="name">{{item.goodsitemname}}</span>
-					<div class="right">
-						<span class="price">￥{{item.price}}</span>
-						<adddecrease class="adddecrease" :price="choosed[index].price" :goodsitemname = "choosed[index].goodsitemname"
-						 :choosedcount="choosed[index].count"></adddecrease>
-					</div>
-				</li>
+				<caritem  v-for="(item,index) of choosed" :foods="item" ></caritem>
+
 			</ul>
 		</div>
 	</div>
@@ -21,69 +15,54 @@
 <script>
 import vm from '../../src/newvue.js'
 import adddecrease from '../../src/components/adddecrease.vue'
+import caritem from '../../src/components/caritem.vue'
 
 export default{
 		data(){
 			return {
 				flag:false,
 				choosed:[],
-				totalprice:0,
+
 			}
 		},
 		mounted(){
-				vm.$on('flag',function(flag){
-					this.flag = flag;
-				}.bind(this));
+			vm.$on('flag',function(flag){
+				this.flag = flag;
+			}.bind(this));
+			vm.$on('carDecrease',function(obj){
+				for( var i = 0 ; i < this.choosed.length ; i++ )
+				{
+					if(this.choosed[i].name === obj.name)
+					{
+						this.choosed.splice(i,1);
+					}
+				}
+			}.bind(this));
 
-				vm.$on('choosed',function(choosed){
-					if(choosed.goodsitemname === "-1")
-						return ;
-					var i;
-					for(i = 0 ; i < this.choosed.length ; i++)
+			vm.$on('carAdd',function(obj){
+				for( var i = 0 ; i < this.choosed.length ; i++ )
+				{
+					if(this.choosed[i].name === obj.name)
 					{
-						if(choosed.goodsitemname === this.choosed[i].goodsitemname)
-						{
-							if(choosed.count == 0 )
-							{
-								this.choosed.splice(i,1);			
-							}
-							else
-							{
-								this.choosed[i].count = choosed.count;
-							}	
-							break;
-						}
+						break;
 					}
-					if( i == this.choosed.length && choosed.count != 0)
-					{
-						if(choosed.goodsitemname)
-						{							
-							vm.$set(this.choosed,i,{'count':choosed.count,'goodsitemname':choosed.goodsitemname,'price':choosed.price})
-						}
-					}
-				}.bind(this));
+				}
+				if( i === this.choosed.length)
+				{
+					this.choosed.push(obj);
+				}
+
+			}.bind(this));
 		},
 		methods:{
 			clearout(){
-				vm.$emit('choosed',{'goodsitemname':-1});
-				this.choosed.splice(0,this.choosed.length);
-
-				
-			}
+				vm.$emit("clearout");
+			},		
 		},
 		components:{
 			adddecrease:adddecrease,
+			caritem:caritem,
 		},
-		computed:{
-			totalprice:function(){
-				var totalprice = 0;
-				for( var i = 0 ; i < this.choosed.length ; i++ )
-				{
-					totalprice += this.choosed[i].price;
-				}
-				return totalprice;
-			}
-		}
 }
 </script>
 <style scoped>
@@ -133,7 +112,7 @@ ul,li{
 	padding-left: 18px;
 	padding-right: 18px;
 }
-.detail .content ul li{
+/* .detail .content ul li{
 	position: relative;
 	width: 100%;
 	height: 48px;
@@ -162,6 +141,5 @@ ul,li{
 }
 .detail .content ul li .adddecrease{
 	position: relative;
-
-}
+} */
 </style>

@@ -1,30 +1,30 @@
 <template>
-	<div class="gooddetail" v-show="show">
-		<div class="icon-close" @click="close()"></div>
-		<img :src="checkfood.image">
+	<div class="gooddetail">
+		<div class="icon-close" @click="close"></div>
+		<img :src="foods.image">
 		<div class="header">
 			<div class="content">
-				<div class="title">{{checkfood.name}}</div>
-				<div class="sales">月售{{checkfood.sellCount}}份<span class="evaluation">好评率{{checkfood.rating}}%</span></div>
-				<div class="price">￥{{checkfood.price}}
-						<span class="olprice">{{checkfood.oldPrice}}</span>
+				<div class="title">{{foods.name}}</div>
+				<div class="sales">月售{{foods.sellCount}}份<span class="evaluation">好评率{{foods.rating}}%</span></div>
+				<div class="price">￥{{foods.price}}
+						<span class="olprice">{{foods.oldPrice}}</span>
 						<div class="button">
 							<span v-show="count==0" @click="addToCar">加入购物车</span>
-							<adddecrease  v-show="count>0" :goodsitemname="checkfood.name" :price="checkfood.price" :choosedcount="count"></adddecrease>
+							<adddecrease  v-show="count>0" :foods="foods"  :count="count"></adddecrease>
 						</div>
 				</div>
 			</div>
 		</div>
-		<div class="division" v-show="(checkfood.info)"></div>
-		<div class="introduce" v-show="(checkfood.info)">
+		<div class="division" v-show="(foods.info)"></div>
+		<div class="introduce" v-show="(foods.info)">
 			<div class="title" >商品介绍</div>
-			<p>{{checkfood.info}}</p>
+			<p>{{foods.info}}</p>
 		</div>
 		<div class="division"></div>
 		<div class="evaluation">
 			<div class="title">商品评价</div>
 			<div class="choice">
-				<div class="all" @click="showAll">全部<span>{{checkfood.ratings.length}}</span></div>
+				<div class="all" @click="showAll">全部<span>{{foods.ratings.length}}</span></div>
 				<div class="recommend" @click="recommend">推荐{{recommendNum}}</div>
 				<div class="ridicule" @click="ridicule">吐槽{{ridiculeNum}}</div>
 			</div>
@@ -33,15 +33,15 @@
 				<div class="content">只看有内容的评价</div>
 			</div>
 			<ul>
-				<li v-for="(item,index) in checkfood.ratings" v-show="!checkfood.ratings[index].flag">
+				<li v-for="(item,index) in foods.ratings" v-if ="select(item,condition)">
 					<div class="information">
 						<span class="time">{{time[index]}}</span>
-						<span class="username">{{checkfood.ratings[index].username}}</span>
-						<img :src="checkfood.ratings[index].avatar" alt="">
+						<span class="username">{{foods.ratings[index].username}}</span>
+						<img :src="foods.ratings[index].avatar" alt="">
 					</div>
 					<div class="content">
-						<span :class="[downAndUp[checkfood.ratings[index].rateType]]"></span>
-						<div>{{checkfood.ratings[index].text}}</div>
+						<span :class="[downAndUp[foods.ratings[index].rateType]]"></span>
+						<div>{{foods.ratings[index].text}}</div>
 					</div>
 				</li>
 			</ul>
@@ -54,28 +54,31 @@ import vm from '../../src/newvue.js'
 import adddecrease from '../../src/components/adddecrease.vue'
 
 export default {
-  props:['checkfood',"show","count"],
+  props:['foods',"count"],
   data () {
  	   return {
     	downAndUp:["icon-thumb_up","icon-thumb_down"],
     	blue:{color:" rgb(147,153,159)"},
-    	addcomponent:"",
+    	choice:-1,
+    	condition:-1,
     };
   },
   computed:{
 	  	time(){
 	  		var time = new Array();
-	  		for( var i = 0 ; i < this.checkfood.ratings.length ; i++ )
+	  		for( var i = 0 ; i < this.foods.ratings.length ; i++ )
 	  		{
-	  			time.push(this.checkfood.ratings[i].rateTime);
+	  			var now = new Date(this.foods.ratings[i].rateTime);
+	  			var str = now.getFullYear()+"-"+now.getMonth()+"-"+now.getDay()+" "+now.getHours()+":"+now.getMinutes();
+	  			time.push(str);
 	  		}
 	  		return time;
 	  	},
 	  	recommendNum(){
 	  		var temp = 0 ;
-	  		for( var i = 0 ; i < this.checkfood.ratings.length ; i++ )
+	  		for( var i = 0 ; i < this.foods.ratings.length ; i++ )
 	  		{
-	  			if(this.checkfood.ratings[i].rateType == 0 )
+	  			if(this.foods.ratings[i].rateType == 0 )
 	  			{
 	  				temp++;
 	  			}
@@ -84,9 +87,9 @@ export default {
 	  	},
 	  	ridiculeNum(){
 	  		var temp = 0 ;
-	  		for( var i = 0 ; i < this.checkfood.ratings.length ; i++ )
+	  		for( var i = 0 ; i < this.foods.ratings.length ; i++ )
 	  		{
-	  			if(this.checkfood.ratings[i].rateType == 1 )
+	  			if(this.foods.ratings[i].rateType == 1 )
 	  			{
 	  				temp++;
 	  			}
@@ -94,79 +97,72 @@ export default {
 	  		return temp;
 	  	}
   },
+  watch:{
+  	condition:function(newvalue,oldvalue){
+  		if(newvalue!=2)
+  			this.blue.color = "rgb(147,153,159)";
+
+  	}
+  },
   mounted(){
   		
   		if(this.content)
   			this.show = !this.show;	
   },
   methods:{
-	  	close(){
-	  		this.show = !this.show;
-	  	},
 	  	screen(){
 	  		if(this.blue.color == "rgb(147,153,159)")
 	  		{
 	  			this.blue.color = "rgb(0,160,220)"
-		  		for( var i = 0 ; i < this.checkfood.ratings.length ; i++ )
-		  		{
-		  			if( this.checkfood.ratings[i].text ==="")
-		  			{
-		  				vm.$set(this.checkfood.ratings[i],'flag',true);
-		  			}
-		  			else
-		  			{
-		  				vm.$set(this.checkfood.ratings[i],'flag',false);
-		  			}
-		  		}
+		  		this.condition = 2;
 	  		}
 	  		else
 	  		{
 	  			this.blue.color = "rgb(147,153,159)";
-	  			for( var i = 0 ; i < this.checkfood.ratings.length ; i++ )
-		  		{
-		  			
-		  			vm.$set(this.checkfood.ratings[i],'flag',false);
-		  	
-		  		}
+	  			this.condition = -1;
 	  		}	  		
 	  	},
 	  	ridicule(){  	
-	  		for( var i = 0 ; i < this.checkfood.ratings.length ; i++ )
-	  		{
-	  			if( this.checkfood.ratings[i].rateType == 1 )
-	  			{
-	  				vm.$set(this.checkfood.ratings[i],'flag',false);
-	  			}
-	  			else
-	  			{
-	  				vm.$set(this.checkfood.ratings[i],'flag',true);
-	  			}
-	  		}	
+	  		/*this.choice = 0;*/
+	  		this.condition = 0;
 	  	},
 	  	recommend(){
-	  		for( var i = 0 ; i < this.checkfood.ratings.length ; i++ )
-	  		{
-	  			if( this.checkfood.ratings[i].rateType == 0 )
-	  			{
-	  				vm.$set(this.checkfood.ratings[i],'flag',false);
-	  			}
-	  			else
-	  			{
-	  				vm.$set(this.checkfood.ratings[i],'flag',true);
-	  			}
-	  		}
+	  		/*this.choice = 1;*/
+	  		this.condition = 1;
 	  	},
 	  	showAll(){
-	  		for( var i = 0 ; i < this.checkfood.ratings.length ; i++ )
-	  		{
-	  			vm.$set(this.checkfood.ratings[i],'flag',false);
-
-	  		}
+	  		/*this.choice = -1;*/
+	  		this.condition = -1;
 	  	},
 	  	addToCar(){
-	  		this.count++;
-	  		vm.$emit('choosed',{'goodsitemname':this.checkfood.name,'price':this.checkfood.price,'count':this.count});
-			vm.$emit('totalprice',this.checkfood.price);
+	  		this.count = 1;
+	  		vm.$emit('countChange',{'foods':this.foods,'msg':'add'});
+	  	},
+	  	close(){
+	  		vm.$emit('close');
+	  	},
+	  	select(item,condition){
+	  		if(condition == -1)
+	  		{
+	  			return true;
+	  		}
+	  		else if(condition == 0){
+	  			if(item.rateType == 1)
+	  				return true;
+	  			else
+	  				return false;
+
+	  		}else if(condition == 1){
+	  			if(item.rateType == 0 )
+	  				return true;
+	  			else 
+	  				return false;
+	  		}else if(condition == 2){
+	  			if(item.text !== "")
+	  				return true;
+	  			else
+	  				return false;
+	  		}
 	  	}
   },
   components:{
@@ -178,6 +174,14 @@ export default {
 
 <style rel="stylesheet/scss" lang="scss" scoped>
 .gooddetail{
+	position: absolute;
+	width: 100%;
+	height: 93%;
+	overflow: scroll;
+	z-index: 2;
+	top: 0px;
+	left:0px;
+	background-color: white;
 	ul,li{
 		list-style: none;
 	}
@@ -235,6 +239,7 @@ export default {
 				}
 				.button{
 					float: right;
+					height: 32px;
 					display: inline-block;
 					span{
 						box-sizing:border-box;

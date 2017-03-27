@@ -5,6 +5,7 @@
 		</transition>
 		<span class="count" v-show="count>0">{{count}}</span>
 		<span class="icon-add_circle"  @click.stop="add"></span>
+		<span class="point"  :style="jump">1</span>
 	</div>
 </template>
 <script>
@@ -12,53 +13,30 @@ import vm from '../../src/newvue.js'
 
 
 export default{
-	props:['goodsitemname','itemname','choosedcount','price'],
+
+	props:['count','foods'],
 	data(){
 		return {
-			count:0,
+			jump:{'top':'','left':'','display':'none'},
 		}
 	},
 	watch:{
-		choosedcount:function(){
-			this.count = this.choosedcount;
-		}
-	},
-	created(){
-			if(this.choosedcount)
+		count:function(newvalue,oldvalue){
+			if(newvalue > oldvalue)
 			{
-				this.count = this.choosedcount;
+				var point = document.getElementsByTagName('span')[3];
+				this.jump.top = document.documentElement.clientHeight - point.offsetTop - 48 +'px';
+				this.jump.left = 49 - point.offsetLeft + 'px';
+				this.jump.display = 'inline-block';
 			}
-			/*vm.$on('choosed',function(choosed){
-  				if(choosed.goodsitemname === this.goodsitemname)
-  				{  					
-  					this.count = choosed.count;
-  				}
-  				else if(choosed.goodsitemname == -1)
-  				{
-  					this.count = 0;
-  				}	
-  			}.bind(this));*/		
-	},
-	mounted(){
-		vm.$on('choosed',function(choosed){
-  				if(choosed.goodsitemname === this.goodsitemname)
-  				{  					
-  					this.count = choosed.count;
-  				}
-  				else if(choosed.goodsitemname == -1)
-  				{
-  					this.count = 0;
-  				}	
-  			}.bind(this));
+		}
 	},
 	methods:{
 		add(){
-			vm.$emit('choosed',{'goodsitemname':this.goodsitemname,'price':this.price,'count':this.count+1});
-			vm.$emit('totalprice',this.price);
+			vm.$emit('countChange',{'foods':this.foods,'msg':'add'});
 		},
 		decrease(){
-			vm.$emit('choosed',{'goodsitemname':this.goodsitemname,'price':this.price,'count':this.count-1});
-			vm.$emit('totalprice',this.price-2*this.price);
+			vm.$emit('countChange',{'foods':this.foods,'msg':'decrease'});
 		},
 	},
 
@@ -93,8 +71,23 @@ export default{
 	font-size: 24px;
 	color: rgb(0,160,220);
 	line-height: 24px;
-
-
+}
+.point{
+	transition: top 1s linear,left 1s linear;
+	background-color: #00A0DC;
+	box-sizing:border-box;
+	padding-top: 2.5px;
+    width: 21px;
+    height: 21px;
+    border-radius: 10.5px;
+    display: inline-block;
+    color: white;
+    text-align: center;
+    font-size: 5px;
+    position: absolute;
+    z-index: 0;
+    top: 0px;
+    left: 1px;
 }
 .count{
 	font-size: 10px;

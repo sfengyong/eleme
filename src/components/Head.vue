@@ -18,7 +18,7 @@
 				</div>
 			</div>
 			<div v-if="seller.supports" class="support-content">
-                <span class="count">{{ seller.supports.length }}个　></span>
+                <span class="count" @click="detailShow=!detailShow">{{ seller.supports.length }}个　></span>
             </div>
 		</div>
 		<div class="bulletin-wrapper">
@@ -40,7 +40,7 @@
                         <div class="text">优惠信息</div>
                         <div class="line"></div>
                     </div>
-                   <ul v-if="seller.supports" class="supports">
+                   	<ul v-if="seller.supports" class="supports">
 						<li class="support-item" v-for="(item, index) in seller.supports">
 	                       	<img :src="src">
 	                        <span>{{ seller.supports[index].description }}</span>
@@ -56,8 +56,7 @@
                     </div>
 				</div>
 			</div>
-			<div class="detail-close" @click="hideDetail">X
-            </div>
+			<div class="icon-close" @click="hideDetail"></div>
 		</div>
 	</div>
 </template>
@@ -223,10 +222,11 @@ export default{
 	left: 0px;
 }
 .detail-wrapper{
-	margin-top:64px;
+	box-sizing:border-box;
+	padding-top:64px;
 	width: 100%;
 	min-height: 100%;
-	padding-bottom: 50px;
+	margin-bottom: -50px;
 }
 .detail-wrapper .detail-main .name{
 	font-size: 16px;
@@ -241,11 +241,18 @@ export default{
 	margin-top: 18px;
 	margin-left: 28%;
 }
-
-.detail-close {
+.icon-close{
 	position: relative;
-	margin-top: -50px;
+	height: 50px;
 	clear: both;
+}
+.icon-close:before {
+	content: "\e903";
+	font-family: 'icomoon';
+	color: white;
+	font-size: 30px;
+	padding-left: 43%;
+	
 } 
 .detail-wrapper .detail-main .star-wrapper{
 	display: inline-block;
@@ -294,6 +301,7 @@ export default{
     line-height: 24px;
     font-size: 12px;
     color: rgb(255,255,255);
+    margin-bottom: 50px;
 }
 
 </style>
